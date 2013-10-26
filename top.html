@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map-canvas { height: 100% }
+    </style>
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqFZ8yqA6U_UDMdc3zw4hGwHKrezK4NyQ&sensor=false">
+    </script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.5.js"></script>  
+    <script type="text/javascript">
+          var geocoder;
+	  var map;
+	  var a,b;
+	  var markersArray = [];
+	  var info_window = new google.maps.InfoWindow({content: ''});
+
+	  function add_marker(racer_id, point, note) {
+	    var marker = new google.maps.Marker({map: map, position: point, clickable: true});
+	    marker.note = note;
+	    google.maps.event.addListener(marker, 'click', function() {
+		info_window.content = marker.note;
+		info_window.open(map, marker);
+	    });
+	    return marker;
+	  }
+
+	  function initialize() {
+	    geocoder = new google.maps.Geocoder();
+	    var latlng = new google.maps.LatLng(-34.397, 150.644);
+	    var mapOptions = {
+	      zoom: 2,
+	      center: latlng,
+	      mapTypeId: google.maps.MapTypeId.ROADMAP
+	    }
+	    map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+		google.maps.Map.prototype.clearOverlays = function() {
+		if (markersArray) {
+		    for (i in markersArray) {
+		      markersArray[i].setMap(null);
+		    }
+		    markersArray.length = 0;
+		  }
+		}
+	 ajaxfun(0,0);
+	 }
+	function ajaxCallSucceed(response) {
+		var i=0;
+		if(markersArray.length > 0){
+		 markersArray.length=0;
+		 map.clearOverlays();
+		}
+		map.setCenter(new google.maps.LatLng(response.earthquakes[0].lat,response.earthquakes[0].lng));
+		marker = add_marker(0,new google.maps.LatLng(response.earthquakes[i].lat,response.earthquakes[i].lng),
+			'<b>Latitude: </b> ' + response.earthquakes[i].lat + ' <br>' +
+			'<b>Longitude: </b> ' + response.earthquakes[i].lng + ' <br>' +
+			'<b>Magnitude: </b> ' + response.earthquakes[i].magnitude + ' <br>' +
+			   '<b>datetime: </b> ' + response.earthquakes[i].datetime + ' <br>' +
+			   '<b>depth: </b> ' + response.earthquakes[i].depth + ' <br>');
+		markersArray.push(marker);
+		i=1;
+		while(response.earthquakes[i].lng){
+			marker = add_marker(0,new google.maps.LatLng(response.earthquakes[i].lat,response.earthquakes[i].lng),
+			'<b>Latitude: </b> ' + response.earthquakes[i].lat + ' <br>' +
+			'<b>Longitude: </b> ' + response.earthquakes[i].lng + ' <br>' +
+			'<b>Magnitude: </b> ' + response.earthquakes[i].magnitude + ' <br>' +
+			   '<b>datetime: </b> ' + response.earthquakes[i].datetime + ' <br>' +
+			   '<b>depth: </b> ' + response.earthquakes[i].depth + ' <br>');
+		markersArray.push(marker);
+		 i++;
+		}
+	}
+
+	function ajaxCallFailed(error) {
+	 alert("Falied..");
+	}
+
+	function ajaxfun(a,b){
+	var q = "http://api.geonames.org/earthquakesJSON?north=-200&south=200&east=200&west=-170&username=gurumukhi&date=2012-08-01&callback=?";
+	$.ajax({
+		type: "POST",
+		data: "{'prefix':''}",
+		url: q,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: ajaxCallSucceed,
+		failure: ajaxCallFailed
+	});
+	}
+
+
+	  function codeAddress() {
+	    var address = document.getElementById("address").value;
+	    geocoder.geocode( { 'address': address}, function(results, status) {
+	      if (status == google.maps.GeocoderStatus.OK) {
+		ajaxfun(results[0].geometry.location.lng(),results[0].geometry.location.lat());
+	      } else {
+		alert("Geocode was not successful for the following reason: " + status);
+	      }
+	    });
+	  }
+  </script>
+ </head>
+<body onload="initialize();">
+  <div width="100%" style="text-align:center;"><br/><br/>
+    List of top largest earthquakes in last year.</a> &nbsp &nbsp &nbsp &nbsp</div>
+	<br/>
+ <div id="map-canvas" style="width: 100%; height: 580px;"></div>
+  </div>
+<div id="da"></div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+Simple web pages to take any location from user and then by calling the GeoNames Recent Earthquake WebService (http://www.geonames.org/export/JSON-webservices.html#earthquakesJSON), can plot recent earthquake details near that location in last 1 year.
